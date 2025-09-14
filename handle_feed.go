@@ -21,7 +21,7 @@ func handleAddFeed(s *state, cmd command) error {
 
 	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return fmt.Errorf("user is logged out")
+		return fmt.Errorf("user not logged in")
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
@@ -38,6 +38,24 @@ func handleAddFeed(s *state, cmd command) error {
 
 	fmt.Println("Feed created:")
 	printFeed(&feed)
+	return nil
+}
+
+func handleListFeeds(s *state, cmd command) error {
+	_, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("user not logged in")
+	}
+
+	feeds, err := s.db.GetFeedsWithUserName(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("* %s (%s) (%s)\n", feed.Name, feed.Url, feed.Username.String)
+	}
+
 	return nil
 }
 
