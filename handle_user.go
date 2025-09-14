@@ -17,7 +17,7 @@ func handlerLogin(s *state, cmd command) error {
 
 	user, err := s.db.GetUser(context.Background(), username)
 	if err != nil {
-		return fmt.Errorf("user does not exist")
+		return fmt.Errorf("cannot find user: %w", err)
 	}
 
 	err = s.cfg.SetUser(user.Name)
@@ -53,8 +53,13 @@ func handleRegister(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("User created: %v\n", user.Name)
-	s.cfg.SetUser(user.Name)
+	err = s.cfg.SetUser(user.Name)
+	if err != nil {
+		return fmt.Errorf("could not set current user: %w", err)
+	}
+
+	fmt.Println("User created:")
+	printUser(&user)
 	return nil
 }
 
@@ -73,4 +78,9 @@ func handleListUsers(s *state, cmd command) error {
 	}
 
 	return nil
+}
+
+func printUser(user *database.User) {
+	fmt.Printf(" * ID:    %v\n", user.ID)
+	fmt.Printf(" * Name:  %v\n", user.Name)
 }
