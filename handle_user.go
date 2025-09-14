@@ -40,7 +40,7 @@ func handleRegister(s *state, cmd command) error {
 
 	user, err := s.db.GetUser(context.Background(), username)
 	if err == nil {
-		return fmt.Errorf("user already exists: %s", user.Name)
+		return fmt.Errorf("user already exists: %v", user.Name)
 	}
 
 	user, err = s.db.CreateUser(context.Background(), database.CreateUserParams{
@@ -53,7 +53,24 @@ func handleRegister(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("User created: %s\n", user.Name)
+	fmt.Printf("User created: %v\n", user.Name)
 	s.cfg.SetUser(user.Name)
+	return nil
+}
+
+func handleListUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		if user.Name == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %v\n", user.Name)
+		}
+	}
+
 	return nil
 }
