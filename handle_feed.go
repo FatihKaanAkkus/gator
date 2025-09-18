@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func handleAddFeed(s *state, cmd command) error {
+func handleAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("title is required")
 	}
@@ -19,15 +19,10 @@ func handleAddFeed(s *state, cmd command) error {
 	feedTitle := cmd.Args[0]
 	feedUrl := cmd.Args[1]
 
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("user not logged in")
-	}
-
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		Name:      feedTitle,
 		Url:       feedUrl,
 		UserID:    user.ID,
@@ -36,20 +31,28 @@ func handleAddFeed(s *state, cmd command) error {
 		return fmt.Errorf("failed to create feed: %v", err)
 	}
 
-	fmt.Println("Feed created:")
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create feed follow: %v", err)
+	}
+
+	// TODO: Rollback when one of the queries fail
+
+	fmt.Println("Feed created and added to following:")
 	printFeed(&feed)
 	return nil
 }
 
-func handleListFeeds(s *state, cmd command) error {
-	_, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("user not logged in")
-	}
-
+func handleListFeeds(s *state, cmd command, user database.User) error {
 	feeds, err := s.db.GetFeedsWithUserName(context.Background())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get feed for user: %v", err)
 	}
 
 	for _, feed := range feeds {

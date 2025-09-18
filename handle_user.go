@@ -34,9 +34,6 @@ func handleRegister(s *state, cmd command) error {
 		return fmt.Errorf("username is required")
 	}
 	username := cmd.Args[0]
-	createdAt := time.Now()
-	UpdatedAt := time.Now()
-	uuid := uuid.New()
 
 	user, err := s.db.GetUser(context.Background(), username)
 	if err == nil {
@@ -44,13 +41,13 @@ func handleRegister(s *state, cmd command) error {
 	}
 
 	user, err = s.db.CreateUser(context.Background(), database.CreateUserParams{
-		ID:        uuid,
-		CreatedAt: createdAt,
-		UpdatedAt: UpdatedAt,
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		Name:      username,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed create user: %v", err)
 	}
 
 	err = s.cfg.SetUser(user.Name)
@@ -66,7 +63,7 @@ func handleRegister(s *state, cmd command) error {
 func handleListUsers(s *state, cmd command) error {
 	users, err := s.db.GetUsers(context.Background())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to users: %v", err)
 	}
 
 	for _, user := range users {

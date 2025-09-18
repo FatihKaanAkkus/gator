@@ -13,5 +13,13 @@ RETURNING *;
 -- name: GetFeeds :many
 SELECT * FROM feeds;
 
+-- name: GetFeed :one
+SELECT * FROM feeds
+WHERE url = $1 LIMIT 1;
+
+-- name: GetFeedById :one
+SELECT * FROM feeds
+WHERE id = $1 LIMIT 1;
+
 -- name: GetFeedsWithUserName :many
 SELECT feeds.*, users.name as username FROM feeds LEFT JOIN users ON feeds.user_id = users.id;
