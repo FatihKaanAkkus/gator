@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/FatihKaanAkkus/gator/internal/database"
@@ -10,25 +11,25 @@ import (
 )
 
 func handleAddFeed(s *state, cmd command, user database.User) error {
-	if len(cmd.Args) < 1 {
-		return fmt.Errorf("title is required")
-	}
 	if len(cmd.Args) < 2 {
-		return fmt.Errorf("url is required")
+		return fmt.Errorf("usage: %v <title> <url>", cmd.Name)
 	}
 	feedTitle := cmd.Args[0]
 	feedUrl := cmd.Args[1]
 
-	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
-		ID:        uuid.New(),
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
-		Name:      feedTitle,
-		Url:       feedUrl,
-		UserID:    user.ID,
-	})
+	feed, err := s.db.GetFeed(context.Background(), feedUrl)
 	if err != nil {
-		return fmt.Errorf("failed to create feed: %v", err)
+		feed, err = s.db.CreateFeed(context.Background(), database.CreateFeedParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Name:      feedTitle,
+			Url:       feedUrl,
+			UserID:    user.ID,
+		})
+		if err != nil {
+			fmt.Printf("failed to create feed: %v", err)
+		}
 	}
 
 	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
@@ -39,12 +40,15 @@ func handleAddFeed(s *state, cmd command, user database.User) error {
 		FeedID:    feed.ID,
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "unique constraint \"uc_feedfollows\"") {
+			return fmt.Errorf("already following")
+		}
 		return fmt.Errorf("failed to create feed follow: %v", err)
 	}
 
 	// TODO: Rollback when one of the queries fail
 
-	fmt.Println("Feed created and added to following:")
+	fmt.Println("Feed added to following:")
 	printFeed(&feed)
 	return nil
 }

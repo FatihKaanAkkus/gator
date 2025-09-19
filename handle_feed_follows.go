@@ -11,7 +11,7 @@ import (
 
 func handleFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
-		return fmt.Errorf("feed url is required")
+		return fmt.Errorf("usage: %v <url>", cmd.Name)
 	}
 	feedUrl := cmd.Args[0]
 
@@ -52,7 +52,7 @@ func handleFollowing(s *state, cmd command, user database.User) error {
 
 func handleUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
-		return fmt.Errorf("feed url is required")
+		return fmt.Errorf("usage: %v <url>", cmd.Name)
 	}
 	feedUrl := cmd.Args[0]
 

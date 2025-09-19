@@ -133,7 +133,7 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]Feed, error) {
 }
 
 const getFeedsWithUserName = `-- name: GetFeedsWithUserName :many
-SELECT feeds.id, feeds.created_at, feeds.updated_at, feeds.name, feeds.url, feeds.user_id, feeds.last_fetched_at, users.name as username FROM feeds 
+SELECT feeds.id, feeds.created_at, feeds.updated_at, feeds.name, feeds.url, feeds.user_id, feeds.last_fetched_at, users.name as username FROM feeds
 LEFT JOIN users ON feeds.user_id = users.id
 `
 

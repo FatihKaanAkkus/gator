@@ -11,7 +11,7 @@ import (
 
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.Args) < 1 {
-		return fmt.Errorf("username is required")
+		return fmt.Errorf("usage: %v <name>", cmd.Name)
 	}
 	username := cmd.Args[0]
 
@@ -31,7 +31,7 @@ func handlerLogin(s *state, cmd command) error {
 
 func handleRegister(s *state, cmd command) error {
 	if len(cmd.Args) < 1 {
-		return fmt.Errorf("username is required")
+		return fmt.Errorf("usage: %v <name>", cmd.Name)
 	}
 	username := cmd.Args[0]
 

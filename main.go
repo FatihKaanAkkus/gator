@@ -47,10 +47,11 @@ func main() {
 	cmds.register("follow", middlewareLoggedIn(handleFollow))
 	cmds.register("following", middlewareLoggedIn(handleFollowing))
 	cmds.register("unfollow", middlewareLoggedIn(handleUnfollow))
+	cmds.register("browse", middlewareLoggedIn(handleBrowse))
 
 	args := os.Args[1:]
 	if len(args) < 1 {
-		log.Fatal("Usage: cli <command> [args...]")
+		log.Fatal("Usage: gator <command> [args...]")
 	}
 
 	err = cmds.run(s, command{
